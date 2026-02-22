@@ -98,186 +98,135 @@ class SepayController
      */
     public function handleWebhook(Request $request)
     {
-        // Luôn log payload để debug
-        Log::info('SePay Webhook Received:', [
-            'headers' => $request->headers->all(),
-            'body' => $request->all(),
-            'raw_body' => $request->getContent()
+        // 1. Log request payload for audit trail
+        Log::info('SePay WebHook - Incoming Request:', [
+            'id' => $request->input('id'),
+            'gateway' => $request->input('gateway'),
+            'amount' => $request->input('transferAmount'),
+            'content' => $request->input('content'),
         ]);
 
-        // Xác thực API Key từ header - dùng sandbox nên bỏ qua xác thực
-        $apiKey = $request->header('Authorization');
-        // ... (phần xác thực cũ gộp vào dưới)
-        
-        // Lấy dữ liệu từ payload SePay
-        $transactionId = $request->input('id');
-        $gateway = $request->input('gateway');  // Tên ngân hàng
-        $transactionDate = $request->input('transactionDate');
-        $accountNumber = $request->input('accountNumber');
-        $transferType = $request->input('transferType'); // 'in' = tiền vào
-        $transferAmount = $request->input('transferAmount');
-        $content = $request->input('content'); // Nội dung chuyển khoản
-        $referenceCode = $request->input('referenceCode');
-
-        // Lấy tài khoản ngân hàng từ config
-        $expectedAccount = env('SEPAY_BANK_ACCOUNT', '968866976549');
-
-        // Kiểm tra xem giao dịch có chuyển vào tài khoản đúng không
-        // accountNumber trong webhook là tài khoản người gửi, cần kiểm tra qua gateway
-        // Nếu SePay gửi thông tin tài khoản nhận, kiểm tra thêm
-        $destinationAccount = $request->input('destinationAccount') ?? $request->input('toAccount');
-
-        // Log để debug
-        Log::info('SePay Webhook - Account Check:', [
-            'expected' => $expectedAccount,
-            'destination' => $destinationAccount,
-            'from_account' => $accountNumber
-        ]);
-
-        // Lưu transaction vào database
-        $sepayTx = SepayTransaction::create([
-            'transaction_id' => $transactionId,
-            'gateway' => $gateway,
-            'account_number' => $accountNumber,
-            'transfer_amount' => $transferAmount,
-            'transfer_type' => $transferType ?? 'in',
-            'content' => $content,
-            'reference_code' => $referenceCode,
-            'transaction_date' => $transactionDate ? Carbon::parse($transactionDate) : now(),
-            'trang_thai' => 'cho_xu_ly',
-        ]);
-
-        // Chỉ xử lý giao dịch tiền vào
-        if ($transferType !== 'in') {
-            $sepayTx->update(['trang_thai' => 'that_bai', 'ghi_chu' => 'Không phải giao dịch tiền vào']);
-            return response()->json([
-                'success' => true,
-                'message' => 'Ignored: Not incoming transfer'
+        // 2. Validate incoming data
+        try {
+            $validated = $request->validate([
+                'id' => 'required|integer',
+                'gateway' => 'required|string',
+                'transactionDate' => 'required|string',
+                'accountNumber' => 'required|string',
+                'transferType' => 'required|string',
+                'transferAmount' => 'required|numeric',
+                'content' => 'required|string',
+                'referenceCode' => 'nullable|string',
             ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('SePay WebHook - Validation Failed:', $e->errors());
+            return response()->json(['status' => false, 'message' => 'Validation error'], 422);
         }
 
-        // Tìm mã đơn hàng trong nội dung chuyển khoản
-        $pattern = '/(ORD[0-9A-Z-]+|TEST[0-9]+)/i';
-        $matchPattern = 'ORD';
-        
-        preg_match($pattern, $content, $matches);
-        $maDonHang = $matches[1] ?? null;
-
-        // Nếu không tìm thấy mã đơn hàng theo regex, thử tìm chính xác
-        if (!$maDonHang) {
-            // Thử tìm đơn hàng có ma_don_hang nằm trong nội dung
-            $datTour = DatTour::whereRaw('LOWER(?) LIKE CONCAT("%", LOWER(ma_don_hang), "%")', [$content])
-                ->where('trang_thai', 'cho_xu_ly')
-                ->first();
-            
-            if ($datTour) {
-                $maDonHang = $datTour->ma_don_hang;
+        // 3. Signature Verification (Optional but recommended)
+        $signature = $request->header('X-Signature');
+        $secret = env('SEPAY_WEBHOOK_SECRET');
+        if ($signature && $secret) {
+            $expectedSignature = hash_hmac('sha256', json_encode($request->all(), JSON_UNESCAPED_UNICODE), $secret);
+            if (!hash_equals($expectedSignature, $signature)) {
+                Log::warning('SePay WebHook - Invalid Signature Detected');
+                return response()->json(['status' => false, 'message' => 'Invalid signature'], 401);
             }
         }
 
-        if (!$maDonHang) {
-            Log::info('SePay Webhook: No order code found in content', [
-                'content' => $content,
-                'pattern' => $pattern
-            ]);
-            // Lưu transaction không tìm thấy mã đơn
-            $sepayTx->update([
-                'trang_thai' => 'khong_khop',
-                'ghi_chu' => 'Không tìm thấy mã đơn hàng trong nội dung: ' . $content
-            ]);
-            return response()->json([
-                'success' => true,
-                'message' => 'No matching order code found'
-            ]);
+        // 4. Idempotency Check (Prevent duplicate processing)
+        $idempotencyKey = $request->header('X-Idempotency-Key') ?? $validated['id'];
+        $existingTx = SepayTransaction::where('transaction_id', $validated['id'])
+            ->orWhere('webhook_idempotency_key', $idempotencyKey)
+            ->first();
+
+        if ($existingTx && $existingTx->trang_thai === 'da_xac_nhan') {
+            Log::info('SePay WebHook - Transaction already processed:', ['id' => $validated['id']]);
+            return response()->json(['status' => true, 'message' => 'Transaction already processed']);
         }
 
-        // Tìm đơn hàng
-        $datTour = DatTour::where('ma_don_hang', $maDonHang)->first();
-
-        if (!$datTour) {
-            Log::warning('SePay Webhook: Order not found', ['ma_don_hang' => $maDonHang]);
-            // Cập nhật transaction không tìm thấy đơn
-            $sepayTx->update([
-                'trang_thai' => 'khong_khop',
-                'ghi_chu' => 'Không tìm thấy đơn hàng: ' . $maDonHang
+        // 5. Atomic Transaction Processing
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($validated, $idempotencyKey, $existingTx) {
+            // Find or Create transaction record
+            $sepayTx = $existingTx ?? new SepayTransaction();
+            $sepayTx->fill([
+                'transaction_id' => $validated['id'],
+                'gateway' => $validated['gateway'],
+                'account_number' => $validated['accountNumber'],
+                'transfer_amount' => $validated['transferAmount'],
+                'transfer_type' => $validated['transferType'],
+                'content' => $validated['content'],
+                'reference_code' => $validated['referenceCode'],
+                'transaction_date' => Carbon::parse($validated['transactionDate']),
+                'webhook_idempotency_key' => $idempotencyKey,
             ]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Order not found: ' . $maDonHang
-            ], 404);
-        }
 
-        // Kiểm tra số tiền (cho phép sai số nhỏ - tăng lên 2000 để test 2-3 nghìn)
-        $allowedDelta = 2000;
-        $expectedAmount = $datTour->tien_thuc_nhan;
-        
-        if (abs($transferAmount - $expectedAmount) > $allowedDelta) {
-            Log::warning('SePay Webhook: Amount mismatch', [
-                'expected' => $expectedAmount,
-                'received' => $transferAmount,
-                'order' => $maDonHang
-            ]);
-            // Vẫn ghi nhận nhưng không tự động confirm
-            $datTour->ghi_chu = "Số tiền không khớp: nhận {$transferAmount}, cần {$expectedAmount}";
-            $datTour->save();
+            // Only process incoming transfers
+            if (strtolower($validated['transferType']) !== 'in') {
+                $sepayTx->trang_thai = 'that_bai';
+                $sepayTx->ghi_chu = 'Ignored: Not an incoming transfer';
+                $sepayTx->save();
+                return response()->json(['status' => true, 'message' => 'Ignored non-incoming transfer']);
+            }
+
+            // Extract Order Code (ORDxxx)
+            $pattern = env('SEPAY_CODE_REGEX', '/(ORD[0-9A-Z-]+)/i');
+            preg_match($pattern, $validated['content'], $matches);
+            $maDonHang = $matches[1] ?? null;
+
+            if (!$maDonHang) {
+                $sepayTx->trang_thai = 'khong_khop';
+                $sepayTx->ghi_chu = 'No order code found in content';
+                $sepayTx->save();
+                return response()->json(['status' => true, 'message' => 'No order code found']);
+            }
+
+            $sepayTx->ma_don_hang = $maDonHang;
+
+            // Find Order
+            $datTour = DatTour::where('ma_don_hang', $maDonHang)->lockForUpdate()->first();
+            if (!$datTour) {
+                $sepayTx->trang_thai = 'khong_khop';
+                $sepayTx->ghi_chu = "Order not found: {$maDonHang}";
+                $sepayTx->save();
+                return response()->json(['status' => false, 'message' => 'Order not found'], 404);
+            }
+
+            // Amount Validation
+            $allowedDelta = (int) env('SEPAY_ALLOWED_DELTA', 2000);
+            $expectedAmount = (int) $datTour->tien_thuc_nhan;
+            $receivedAmount = (int) $validated['transferAmount'];
+
+            if (abs($receivedAmount - $expectedAmount) > $allowedDelta) {
+                $sepayTx->trang_thai = 'khong_khop';
+                $sepayTx->ghi_chu = "Amount mismatch: expected {$expectedAmount}, received {$receivedAmount}";
+                $sepayTx->save();
+                
+                $datTour->update(['ghi_chu' => "SePay: Amount mismatch ({$receivedAmount} vs {$expectedAmount})"]);
+                
+                return response()->json(['status' => false, 'message' => 'Amount mismatch'], 422);
+            }
+
+            // Success: Update Order and Payment status
+            $datTour->update(['trang_thai' => 'da_thanh_toan']);
             
-            // Cập nhật trạng thái transaction
-            $sepayTx->update([
-                'trang_thai' => 'khong_khop',
-                'ma_don_hang' => $maDonHang,
-                'ghi_chu' => "Số tiền không khớp: nhận {$transferAmount}, cần {$expectedAmount}"
-            ]);
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'Amount mismatch - pending manual review'
-            ]);
-        }
+            ThanhToan::updateOrCreate(
+                ['id_dat_tour' => $datTour->id, 'phuong_thuc' => 'sepay'],
+                [
+                    'so_tien' => $receivedAmount,
+                    'trang_thai' => 'thanh_cong',
+                    'thoi_gian_thanh_toan' => $sepayTx->transaction_date,
+                ]
+            );
 
-        // Kiểm tra đơn hàng đã thanh toán chưa
-        if ($datTour->trang_thai === 'da_thanh_toan') {
-            $sepayTx->update([
-                'trang_thai' => 'da_xac_nhan',
-                'ma_don_hang' => $maDonHang,
-                'ghi_chu' => 'Đơn hàng đã thanh toán trước đó'
-            ]);
-            return response()->json([
-                'success' => true,
-                'message' => 'Order already paid'
-            ]);
-        }
+            $sepayTx->trang_thai = 'da_xac_nhan';
+            $sepayTx->ghi_chu = 'Payment successful and matched';
+            $sepayTx->save();
 
-        // Cập nhật trạng thái đơn hàng
-        $datTour->trang_thai = 'da_thanh_toan';
-        $datTour->save();
+            Log::info("SePay WebHook - Success: Order {$maDonHang} marked as paid.");
 
-        // Cập nhật hoặc tạo bản ghi thanh toán
-        ThanhToan::updateOrCreate(
-            ['id_dat_tour' => $datTour->id, 'phuong_thuc' => 'sepay'],
-            [
-                'so_tien' => $transferAmount,
-                'trang_thai' => 'thanh_cong',
-                'thoi_gian_thanh_toan' => $transactionDate ? Carbon::parse($transactionDate) : now(),
-            ]
-        );
-
-        // Cập nhật trạng thái transaction thành công
-        $sepayTx->update([
-            'trang_thai' => 'da_xac_nhan',
-            'ma_don_hang' => $maDonHang,
-            'ghi_chu' => 'Thanh toán thành công'
-        ]);
-
-        Log::info('SePay Webhook: Payment confirmed', [
-            'order' => $maDonHang,
-            'amount' => $transferAmount,
-            'transaction_id' => $transactionId
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Payment confirmed successfully'
-        ]);
+            return response()->json(['status' => true, 'message' => 'Payment processed successfully']);
+        });
     }
 
     /**

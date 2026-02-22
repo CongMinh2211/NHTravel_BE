@@ -15,11 +15,12 @@ class SepayTransaction extends Model
         'account_number',
         'transfer_amount',
         'transfer_type',
-        'content',
+        'content',  
         'reference_code',
         'transaction_date',
         'trang_thai',
         'ghi_chu',
+        'webhook_idempotency_key',
     ];
 
     protected $casts = [
