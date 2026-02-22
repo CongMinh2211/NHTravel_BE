@@ -42,7 +42,7 @@ class NguoiDungController
             $tieu_de = "Kích hoạt tài khoản";
             $view = "kichHoatTK";
             $noi_dung['ho_ten'] = $user->ho_ten;
-            $noi_dung['link'] = "http://localhost:5173/kich-hoat/" . $key;
+            $noi_dung['link'] = "https://nh-travel-three.vercel.app/kich-hoat/" . $key;
             Mail::to($user->email)->send(new MasterMail($tieu_de, $view, $noi_dung));
 
             return response()->json([
