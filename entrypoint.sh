@@ -1,23 +1,26 @@
 #!/bin/sh
-set -e
+# Không dùng set -e để tránh container thoát ngay lập tức khi lỗi migrate
+# set -e 
 
-echo "--- Starting Entrypoint Script ---"
+echo "--- Starting Entrypoint Script (Debug version) ---"
 
-# Đảm bảo thư mục database tồn tại
+# Debug env
+echo "Current PORT: ${PORT}"
+
+# Đảm bảo thư mục database tồn tại và ghi được
 mkdir -p /app/database
-
-# Tạo file database nếu chưa có
-if [ ! -f /app/database/database.sqlite ]; then
-    echo "Creating database.sqlite..."
-    touch /app/database/database.sqlite
-fi
-
-echo "Setting permissions..."
-chmod -R 777 /app/storage /app/bootstrap/cache /app/database
+touch /app/database/database.sqlite
+chmod -R 777 /app/database
+chmod -R 777 /app/storage
+chmod -R 777 /app/bootstrap/cache
 
 echo "Running migrations..."
-php artisan migrate --force
+php artisan migrate --force || echo "Migration failed, continuing anyway..."
 
-echo "Starting PHP Server on port ${PORT:-8080}..."
-# Sử dụng php -S thay cho artisan serve để ổn định hơn trong container
-exec php -S 0.0.0.0:${PORT:-8080} -t public
+# Kiểm tra file log nếu có lỗi
+touch /app/storage/logs/laravel.log
+chmod 777 /app/storage/logs/laravel.log
+
+echo "Starting Laravel Server on port ${PORT:-8000}..."
+# Trở về dùng artisan serve để đúng chuẩn Laravel
+exec php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
