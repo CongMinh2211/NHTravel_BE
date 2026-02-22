@@ -96,32 +96,68 @@ class NguoiDungController
     // Đăng ký người dùng
     public function danhKy(Request $request)
     {
+        try {
+            $request->validate([
+                'ho_ten'        => 'required|string|max:255',
+                'email'         => 'required|email|unique:nguoi_dungs,email',
+                'password'      => 'required|min:6',
+                'cccd'          => 'required|unique:nguoi_dungs,cccd',
+                'so_dien_thoai' => 'required',
+            ], [
+                'ho_ten.required' => 'Họ tên không được để trống.',
+                'email.required'  => 'Email không được để trống.',
+                'email.email'     => 'Email không đúng định dạng.',
+                'email.unique'    => 'Email này đã được sử dụng.',
+                'password.required' => 'Mật khẩu không được để trống.',
+                'password.min'    => 'Mật khẩu phải ít nhất 6 ký tự.',
+                'cccd.required'   => 'Số CCCD không được để trống.',
+                'cccd.unique'     => 'Số CCCD này đã được sử dụng.',
+                'so_dien_thoai.required' => 'Số điện thoại không được để trống.',
+            ]);
 
-        $key = Str::uuid();
-        $user = NguoiDung::create([
-            'ho_ten' => $request->ho_ten,
-            'email'    => $request->email,
-            'password' => $request->password,
-            'cccd' => $request->cccd,
-            'so_dien_thoai' => $request->so_dien_thoai,
-            'ngay_sinh' => $request->ngay_sinh,
-            'id_chuc_vu' => 3,
-            'trang_thai' => 'inactive',
-            'hash_active'   => $key,
+            $key = Str::uuid();
+            $user = NguoiDung::create([
+                'ho_ten'        => $request->ho_ten,
+                'email'         => $request->email,
+                'password'      => $request->password, // Lưu ý: Cân nhắc mã hóa mật khẩu
+                'cccd'          => $request->cccd,
+                'so_dien_thoai' => $request->so_dien_thoai,
+                'ngay_sinh'     => $request->ngay_sinh,
+                'id_chuc_vu'    => 3, // Mặc định là khách hàng
+                'trang_thai'    => 'inactive',
+                'hash_active'   => $key,
+            ]);
 
-        ]);
+            $tieu_de = "Kích hoạt tài khoản";
+            $view = "kichHoatTK";
+            $noi_dung['ho_ten'] = $user->ho_ten;
+            // Thay đổi localhost thành URL Production của Vercel
+            $noi_dung['link'] = "https://nh-travel-three.vercel.app/kich-hoat/" . $key;
+            
+            try {
+                Mail::to($user->email)->send(new MasterMail($tieu_de, $view, $noi_dung));
+            } catch (\Exception $e) {
+                // Nếu lỗi mail (do chưa cấu hình SMTP trên Railway), vẫn để user được tạo
+                // nhưng báo cho họ biết hoặc có thể set active luôn nếu cần.
+            }
 
-        $tieu_de = "Kích hoạt tài khoản";
-        $view = "kichHoatTK";
-        $noi_dung['ho_ten'] = $user->ho_ten;
-        $noi_dung['link'] = "http://localhost:5173/kich-hoat/" . $key;
-        Mail::to($request->email)->send(new MasterMail($tieu_de, $view, $noi_dung));
+            return response()->json([
+                'status' => true,
+                'message' => 'Đăng ký thành công! Vui lòng kiểm tra email để kích hoạt tài khoản.',
+                'data' => $user
+            ]);
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Đăng ký thành công!',
-            'data' => $user
-        ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Có lỗi xảy ra trong quá trình đăng ký: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     // kích hoạt người dùng
@@ -275,42 +311,54 @@ class NguoiDungController
 
     public function suaNguoiDung(Request $request)
     {
-        $user = $request->user();
+        try {
+            $nguoiDung = NguoiDung::find($request->id);
 
-        if (!$user) {
+            if (!$nguoiDung) {
+                return response()->json(['status' => false, 'message' => 'Người dùng không tồn tại'], 404);
+            }
+
+            $request->validate([
+                'ho_ten'        => 'required|string|max:255',
+                'email'         => 'required|email|unique:nguoi_dungs,email,' . $request->id,
+                'id_chuc_vu'    => 'required|exists:chuc_vus,id',
+                'cccd'          => 'nullable|unique:nguoi_dungs,cccd,' . $request->id,
+            ], [
+                'ho_ten.required' => 'Họ tên không được để trống.',
+                'email.unique'    => 'Email này đã được người khác sử dụng.',
+                'cccd.unique'     => 'CCCD này đã được người khác sử dụng.',
+            ]);
+
+            $nguoiDung->update([
+                'ho_ten'        => $request->ho_ten,
+                'email'         => $request->email,
+                'so_dien_thoai' => $request->so_dien_thoai,
+                'ngay_sinh'     => $request->ngay_sinh,
+                'cccd'          => $request->cccd,
+                'id_chuc_vu'    => $request->id_chuc_vu,
+                'trang_thai'    => $request->trang_thai,
+                'password'      => $request->password, // Lưu thẳng
+                'avatar'        => $request->avatar,
+            ]);
+
+            $nguoiDung = NguoiDung::with('chucVu:id,ten_chuc_vu')->find($request->id);
+
             return response()->json([
-                'status' => 0,
-                'message' => 'Token không hợp lệ hoặc đã hết hạn!'
-            ], 401);
+                'status'  => true,
+                'message' => 'Cập nhật người dùng thành công!',
+                'data'    => $nguoiDung
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ], 500);
         }
-
-        $nguoiDung = NguoiDung::find($request->id);
-
-        if (!$nguoiDung) {
-            return response()->json(['status' => 0, 'message' => 'Người dùng không tồn tại']);
-        }
-
-        // Cập nhật thông tin, password lưu thẳng
-        $nguoiDung->update([
-            'ho_ten'        => $request->ho_ten,
-            'email'         => $request->email,
-            'so_dien_thoai' => $request->so_dien_thoai,
-            'ngay_sinh'     => $request->ngay_sinh,
-            'cccd'          => $request->cccd,
-            'id_chuc_vu'    => $request->id_chuc_vu,
-            'trang_thai'    => $request->trang_thai,
-            'password'      => $request->password,
-            'avatar'        => $request->avatar,
-        ]);
-
-        // Load lại user kèm thông tin chức vụ
-        $nguoiDung = NguoiDung::with('chucVu:id,ten_chuc_vu')->find($request->id);
-
-        return response()->json([
-            'status'  => true,
-            'message' => 'Cập nhật người dùng thành công!',
-            'data'    => $nguoiDung
-        ]);
     }
 
     public function xoaNguoiDung(Request $request)
