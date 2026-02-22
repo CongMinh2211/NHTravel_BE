@@ -2,8 +2,8 @@ FROM php:8.2-cli
 
 # Install system dependencies + SQLite
 RUN apt-get update && apt-get install -y \
-    git zip unzip libsqlite3-dev libpng-dev \
-    && docker-php-ext-install pdo_sqlite bcmath gd \
+    git zip unzip libsqlite3-dev libpng-dev libmariadb-dev \
+    && docker-php-ext-install pdo_sqlite pdo_mysql bcmath gd \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Composer

@@ -5,18 +5,16 @@ echo "--- Starting Entrypoint Script (Debug version) ---"
 # Debug env
 echo "Current PORT: ${PORT}"
 
-# Đảm bảo thư mục database tồn tại và ghi được
-mkdir -p /app/database
-touch /app/database/database.sqlite
-chmod -R 777 /app/database
+# Đảm bảo thư mục storage ghi được
 chmod -R 777 /app/storage
 chmod -R 777 /app/bootstrap/cache
 
 echo "Running migrations..."
+# Chạy migrate --force để cập nhật DB cấu trúc mới (không mất dữ liệu cũ)
 php artisan migrate --force || echo "Migration failed, continuing anyway..."
 
-echo "Seeding database..."
-php artisan db:seed --force || echo "Seeder failed (maybe already seeded), continuing..."
+echo "Skipping automatic seeding to prevent data loss."
+# php artisan db:seed --force
 
 # Kiểm tra file log nếu có lỗi
 touch /app/storage/logs/laravel.log
