@@ -23,7 +23,7 @@ RUN mkdir -p storage/framework/{sessions,views,cache/data} \
 EXPOSE 8080
 
 # At startup: create SQLite DB, run migrations, seed, then serve
-CMD touch database/database.sqlite && \
-    php artisan migrate --force && \
-    php artisan db:seed --force && \
-    php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
+COPY entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["entrypoint.sh"]
