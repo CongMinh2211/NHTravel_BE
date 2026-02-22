@@ -12,9 +12,19 @@ class DatTourSeeder extends Seeder
     public function run()
     {
         // Xóa dữ liệu cũ trước khi seed để tránh lỗi UNIQUE constraint
-        DB::statement('PRAGMA foreign_keys = OFF;');
+        if (DB::getDriverName() === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = OFF;');
+        } else {
+            DB::statement('SET FOREIGN_KEY_CHECKS = 0;');
+        }
+
         DB::table('dat_tours')->truncate();
-        DB::statement('PRAGMA foreign_keys = ON;');
+
+        if (DB::getDriverName() === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = ON;');
+        } else {
+            DB::statement('SET FOREIGN_KEY_CHECKS = 1;');
+        }
 
         $donHangs = [];
         $ma = 1;

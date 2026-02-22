@@ -47,11 +47,11 @@ class SepayController
             ], 404);
         }
 
-        // Thông tin ngân hàng MSB (Maritime Bank)
-        $bankName = 'MSB';
-        $bankAccount = '968866976549';
-        $bankAccountName = 'NGUYENTHITUYETNHU DKMN';
-        $bankBin = '970426';
+        // Thông tin ngân hàng từ config .env
+        $bankName = env('SEPAY_BANK_NAME', 'MSB');
+        $bankAccount = env('SEPAY_BANK_ACCOUNT', '968866976549');
+        $bankAccountName = env('SEPAY_BANK_ACCOUNT_NAME', 'NGUYENTHITUYETNHU DKMN');
+        $bankBin = env('SEPAY_BANK_BIN', '970426');
 
         // Tạo URL QR VietQR
         // Format: https://img.vietqr.io/image/{bank}-{account}-{template}.png?amount={amount}&addInfo={content}
@@ -118,6 +118,21 @@ class SepayController
         $transferAmount = $request->input('transferAmount');
         $content = $request->input('content'); // Nội dung chuyển khoản
         $referenceCode = $request->input('referenceCode');
+
+        // Lấy tài khoản ngân hàng từ config
+        $expectedAccount = env('SEPAY_BANK_ACCOUNT', '968866976549');
+
+        // Kiểm tra xem giao dịch có chuyển vào tài khoản đúng không
+        // accountNumber trong webhook là tài khoản người gửi, cần kiểm tra qua gateway
+        // Nếu SePay gửi thông tin tài khoản nhận, kiểm tra thêm
+        $destinationAccount = $request->input('destinationAccount') ?? $request->input('toAccount');
+
+        // Log để debug
+        Log::info('SePay Webhook - Account Check:', [
+            'expected' => $expectedAccount,
+            'destination' => $destinationAccount,
+            'from_account' => $accountNumber
+        ]);
 
         // Lưu transaction vào database
         $sepayTx = SepayTransaction::create([
@@ -323,10 +338,10 @@ class SepayController
             ], 404);
         }
 
-        $bankName = 'MSB';
-        $bankAccount = '968866976549';
-        $bankAccountName = 'NGUYENTHITUYETNHU DKMN';
-        $bankBin = '970426';
+        $bankName = env('SEPAY_BANK_NAME', 'MSB');
+        $bankAccount = env('SEPAY_BANK_ACCOUNT', '968866976549');
+        $bankAccountName = env('SEPAY_BANK_ACCOUNT_NAME', 'NGUYENTHITUYETNHU DKMN');
+        $bankBin = env('SEPAY_BANK_BIN', '970426');
         $soTien = $datTour->tien_thuc_nhan;
 
         $qrUrl = "https://img.vietqr.io/image/{$bankName}-{$bankAccount}-compact.png"
