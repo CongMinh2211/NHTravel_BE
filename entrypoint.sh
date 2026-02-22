@@ -13,8 +13,14 @@ echo "Running migrations..."
 # Chạy migrate --force để cập nhật DB cấu trúc mới (không mất dữ liệu cũ)
 php artisan migrate --force || echo "Migration failed, continuing anyway..."
 
-echo "Skipping automatic seeding to prevent data loss."
-# php artisan db:seed --force
+echo "Checking if database needs seeding..."
+USER_COUNT=$(php artisan tinker --execute="echo App\Models\NguoiDung::count();")
+if [ "$USER_COUNT" = "0" ]; then
+    echo "Database is empty. Seeding initial data..."
+    php artisan db:seed --force
+else
+    echo "Database already has data ($USER_COUNT users). Skipping seed."
+fi
 
 # Kiểm tra file log nếu có lỗi
 touch /app/storage/logs/laravel.log
