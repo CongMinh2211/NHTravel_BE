@@ -267,8 +267,19 @@ class DatTourController extends Controller
             'so_dien_thoai_lien_lac' => $request->so_dien_thoai_lien_lac,
             'dia_chi_lien_lac' => $request->dia_chi_lien_lac,
 
-            'trang_thai'      => 'cho_xu_ly',
+            'trang_thai'      => $request->phuong_thuc_thanh_toan === 'cash' ? 'da_thanh_toan' : 'cho_xu_ly',
         ]);
+
+        // Tạo bản ghi ThanhToan nếu là thanh toán khi đi tour
+        if ($request->phuong_thuc_thanh_toan === 'cash') {
+            \App\Models\ThanhToan::create([
+                'id_dat_tour' => $booking->id,
+                'phuong_thuc' => 'cash',
+                'so_tien' => $tienThucNhan,
+                'trang_thai' => 'thanh_cong',
+                'thoi_gian_thanh_toan' => now(),
+            ]);
+        }
 
         if ($voucher) {
             $voucher->so_luong -= 1;
