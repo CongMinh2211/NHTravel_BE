@@ -169,14 +169,38 @@ class SepayController
                 return response()->json(['status' => true, 'message' => 'Ignored non-incoming transfer']);
             }
 
-            // Extract Order Code (ORDxxx)
-            $pattern = env('SEPAY_CODE_REGEX', '/(ORD[0-9A-Z-]+)/i');
-            preg_match($pattern, $validated['content'], $matches);
-            $maDonHang = $matches[1] ?? null;
+            // Extract Order Code from content
+            // Hỗ trợ cả format ORDxxx và DTxxx
+            $content = $validated['content'];
+            $maDonHang = null;
+            
+            // Thử match nhiều format mã đơn hàng
+            $patterns = [
+                '/(ORD[0-9A-Z_-]+)/i',   // ORD20260222165001417
+                '/(DT\d+)/i',             // DT000001
+            ];
+            
+            foreach ($patterns as $pattern) {
+                if (preg_match($pattern, $content, $matches)) {
+                    $maDonHang = $matches[1];
+                    break;
+                }
+            }
+            
+            // Fallback: Nếu không match regex, dùng toàn bộ content (trim)
+            if (!$maDonHang) {
+                $cleanContent = trim($content);
+                // Kiểm tra xem content có phải là mã đơn hàng không
+                if (DatTour::where('ma_don_hang', $cleanContent)->exists()) {
+                    $maDonHang = $cleanContent;
+                }
+            }
+            
+            Log::info("SePay WebHook - Content: '{$content}', Extracted order: '{$maDonHang}'");
 
             if (!$maDonHang) {
                 $sepayTx->trang_thai = 'khong_khop';
-                $sepayTx->ghi_chu = 'No order code found in content';
+                $sepayTx->ghi_chu = "No order code found in content: {$content}";
                 $sepayTx->save();
                 return response()->json(['status' => true, 'message' => 'No order code found']);
             }
