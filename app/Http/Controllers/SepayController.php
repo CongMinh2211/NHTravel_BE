@@ -49,8 +49,8 @@ class SepayController
 
         // Thông tin ngân hàng MSB (Maritime Bank)
         $bankName = 'MSB';
-        $bankAccount = '968866976549';
-        $bankAccountName = 'NGUYENTHITUYETNHU DKMN';
+        $bankAccount = '7008032005';
+        $bankAccountName = 'TRAN CONG MINH';
         $bankBin = '970426';
 
         // Tạo URL QR VietQR
@@ -336,8 +336,8 @@ class SepayController
         }
 
         $bankName = 'MSB';
-        $bankAccount = '968866976549';
-        $bankAccountName = 'NGUYENTHITUYETNHU DKMN';
+        $bankAccount = '7008032005';
+        $bankAccountName = 'TRAN CONG MINH';
         $bankBin = '970426';
         $soTien = $datTour->tien_thuc_nhan;
 
