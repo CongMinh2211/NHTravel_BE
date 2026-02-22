@@ -184,12 +184,15 @@ class SepayController
             $sepayTx->ma_don_hang = $maDonHang;
 
             // Find Order
-            $datTour = DatTour::where('ma_don_hang', $maDonHang)->lockForUpdate()->first();
+            Log::info("SePay WebHook - Looking for order: {$maDonHang}");
+            $datTour = DatTour::where('ma_don_hang', $maDonHang)->first();
+            
             if (!$datTour) {
+                Log::warning("SePay WebHook - Order not found: {$maDonHang}. Content: {$validated['content']}");
                 $sepayTx->trang_thai = 'khong_khop';
                 $sepayTx->ghi_chu = "Order not found: {$maDonHang}";
                 $sepayTx->save();
-                return response()->json(['status' => false, 'message' => 'Order not found'], 404);
+                return response()->json(['status' => true, 'message' => 'Received - Order not found']);
             }
 
             // Amount Validation
