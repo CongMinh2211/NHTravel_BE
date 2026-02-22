@@ -15,6 +15,9 @@ chmod -R 777 /app/bootstrap/cache
 echo "Running migrations..."
 php artisan migrate --force || echo "Migration failed, continuing anyway..."
 
+echo "Seeding database..."
+php artisan db:seed --force || echo "Seeder failed (maybe already seeded), continuing..."
+
 # Kiểm tra file log nếu có lỗi
 touch /app/storage/logs/laravel.log
 chmod 777 /app/storage/logs/laravel.log
