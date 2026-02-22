@@ -1,6 +1,4 @@
 #!/bin/sh
-# Không dùng set -e để tránh container thoát ngay lập tức khi lỗi migrate
-# set -e 
 
 echo "--- Starting Entrypoint Script (Debug version) ---"
 
@@ -20,6 +18,11 @@ php artisan migrate --force || echo "Migration failed, continuing anyway..."
 # Kiểm tra file log nếu có lỗi
 touch /app/storage/logs/laravel.log
 chmod 777 /app/storage/logs/laravel.log
+
+# Clear và optimize Laravel
+php artisan config:clear
+php artisan cache:clear
+php artisan route:clear
 
 echo "Starting Laravel Server on port ${PORT:-8000}..."
 # Trở về dùng artisan serve để đúng chuẩn Laravel

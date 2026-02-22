@@ -214,6 +214,16 @@ Route::middleware(['auth:sanctum', \App\Http\Middleware\HandleCors::class])->gro
     Route::delete('/chatbot/clear-history/{userId}', [ChatbotLogController::class, 'clearHistory']);
 });
 
+// ===================== HEALTHCHECK =========================
+// Endpoint cho Railway healthcheck
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'message' => 'API is running',
+        'timestamp' => now()->toIso8601String()
+    ]);
+});
+
 // Admin endpoints
 Route::middleware(['auth:sanctum', \App\Http\Middleware\HandleCors::class])->group(function () {
     Route::get('/admin/chatbot/logs', [ChatbotLogController::class, 'index']);
