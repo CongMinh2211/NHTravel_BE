@@ -62,7 +62,7 @@ class SepayController
 
         // Tạo bản ghi ThanhToan với trạng thái chờ
         $thanhToan = ThanhToan::updateOrCreate(
-            ['id_dat_tour' => $datTour->id, 'phuong_thuc' => 'sepay'],
+            ['id_dat_tour' => $datTour->id, 'phuong_thuc' => 'bank'],
             [
                 'so_tien' => $soTien,
                 'trang_thai' => 'cho_thanh_toan',
@@ -211,7 +211,7 @@ class SepayController
             $datTour->update(['trang_thai' => 'da_thanh_toan']);
             
             ThanhToan::updateOrCreate(
-                ['id_dat_tour' => $datTour->id, 'phuong_thuc' => 'sepay'],
+                ['id_dat_tour' => $datTour->id, 'phuong_thuc' => 'bank'],
                 [
                     'so_tien' => $receivedAmount,
                     'trang_thai' => 'thanh_cong',
@@ -252,7 +252,7 @@ class SepayController
         }
 
         $thanhToan = ThanhToan::where('id_dat_tour', $datTour->id)
-            ->where('phuong_thuc', 'sepay')
+            ->where('phuong_thuc', 'bank')
             ->first();
 
         $isPaid = $datTour->trang_thai === 'da_thanh_toan';
