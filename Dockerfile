@@ -23,7 +23,9 @@ RUN mkdir -p storage/framework/{sessions,views,cache/data} \
 EXPOSE 8080
 
 # At startup: create SQLite DB, run migrations, seed, then serve
+# Copy and prepare entrypoint script
 COPY entrypoint.sh /usr/local/bin/
+RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-ENTRYPOINT ["entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
