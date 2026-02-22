@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\DatTour;
 use App\Models\MaGiamGia;
 use App\Models\TourDuLich;
+use App\Mail\MasterMail;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class DatTourController extends Controller
@@ -284,6 +287,49 @@ class DatTourController extends Controller
         if ($voucher) {
             $voucher->so_luong -= 1;
             $voucher->save();
+        }
+
+        // Gửi email xác nhận đặt tour
+        try {
+            $phuongThucMap = [
+                'sepay' => '💳 Chuyển khoản ngân hàng (SePay)',
+                'cash'  => '💵 Thanh toán khi đi tour',
+            ];
+
+            $mailData = [
+                'ten_lien_lac'    => $booking->ten_lien_lac,
+                'email_lien_lac'  => $booking->email_lien_lac,
+                'so_dien_thoai'   => $booking->so_dien_thoai_lien_lac,
+                'dia_chi'         => $booking->dia_chi_lien_lac,
+                'ma_don_hang'     => $booking->ma_don_hang,
+                'ten_tour'        => $tour->ten_tour ?? 'Tour du lịch',
+                'ngay_dat'        => now()->format('d/m/Y H:i'),
+                'ngay_khoi_hanh'  => $tour->ngay_khoi_hanh ? Carbon::parse($tour->ngay_khoi_hanh)->format('d/m/Y') : '',
+                'so_nguoi_lon'    => $booking->so_nguoi_lon,
+                'so_tre_em'       => $booking->so_tre_em,
+                'tong_tien'       => $tongTien,
+                'giam_gia'        => $giamGia,
+                'tien_thuc_nhan'  => $tienThucNhan,
+                'phuong_thuc'     => $phuongThucMap[$request->phuong_thuc_thanh_toan] ?? 'Khác',
+                'phuong_thuc_raw' => $request->phuong_thuc_thanh_toan,
+                'link_don_hang'   => env('FRONTEND_URL', 'https://nhtravel.vercel.app') . '/lich-su-don-hang',
+            ];
+
+            Mail::to($booking->email_lien_lac)->send(
+                new MasterMail(
+                    '✈️ Xác nhận đặt tour - ' . $booking->ma_don_hang,
+                    'xacNhanDatTour',
+                    $mailData
+                )
+            );
+
+            Log::info('Email xác nhận đặt tour đã gửi thành công', ['ma_don_hang' => $booking->ma_don_hang]);
+        } catch (\Exception $e) {
+            // Không block response nếu gửi mail thất bại
+            Log::error('Gửi email xác nhận đặt tour thất bại: ' . $e->getMessage(), [
+                'ma_don_hang' => $booking->ma_don_hang,
+                'email' => $booking->email_lien_lac,
+            ]);
         }
 
         return response()->json([
