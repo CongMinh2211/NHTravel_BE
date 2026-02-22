@@ -224,31 +224,53 @@ class NguoiDungController
 
     public function themNguoiDung(Request $request)
     {
-        $user = $request->user();
+        try {
+            $request->validate([
+                'ho_ten'        => 'required|string|max:255',
+                'email'         => 'required|email|unique:nguoi_dungs,email',
+                'password'      => 'required|min:6',
+                'id_chuc_vu'    => 'required|exists:chuc_vus,id',
+                'cccd'          => 'nullable|unique:nguoi_dungs,cccd',
+            ], [
+                'ho_ten.required' => 'Họ tên không được để trống.',
+                'email.required'  => 'Email không được để trống.',
+                'email.email'     => 'Email không đúng định dạng.',
+                'email.unique'    => 'Email đã tồn tại trong hệ thống.',
+                'password.required' => 'Mật khẩu không được để trống.',
+                'password.min'    => 'Mật khẩu phải từ 6 ký tự trở lên.',
+                'id_chuc_vu.required' => 'Vui lòng chọn chức vụ.',
+                'id_chuc_vu.exists' => 'Chức vụ không hợp lệ.',
+                'cccd.unique'     => 'Số CCCD đã tồn tại trong hệ thống.',
+            ]);
 
-        if (!$user) {
+            $user = NguoiDung::create([
+                'ho_ten'        => $request->ho_ten,
+                'email'         => $request->email,
+                'so_dien_thoai' => $request->so_dien_thoai,
+                'ngay_sinh'     => $request->ngay_sinh,
+                'cccd'          => $request->cccd,
+                'id_chuc_vu'    => $request->id_chuc_vu,
+                'trang_thai'    => $request->trang_thai ?? 'active',
+                'password'      => $request->password,
+                'avatar'        => $request->avatar,
+            ]);
+
             return response()->json([
-                'status' => 0,
-                'message' => 'Token không hợp lệ hoặc đã hết hạn!'
-            ], 401);
+                'status' => true,
+                'message' => 'Thêm người dùng ' . $request->ho_ten . ' thành công!',
+                'data' => $user
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ], 500);
         }
-
-        $user = NguoiDung::create([
-            'ho_ten'        => $request->ho_ten,
-            'email'         => $request->email,
-            'so_dien_thoai' => $request->so_dien_thoai,
-            'ngay_sinh'     => $request->ngay_sinh,
-            'cccd'          => $request->cccd,
-            'id_chuc_vu'    => $request->id_chuc_vu,
-            'trang_thai'    => $request->trang_thai,
-            'password'      => $request->password,
-            'avatar'        => $request->avatar,
-        ]);
-        return response()->json([
-            'status' => true,
-            'message' => 'Thêm người dùng ' . $request->ho_ten . ' thành công!',
-            'data' => $user
-        ]);
     }
 
     public function suaNguoiDung(Request $request)
