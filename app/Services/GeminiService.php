@@ -30,7 +30,7 @@ class GeminiService
     public function generateQuestion(string $prompt): array
     {
         try {
-            $response = Http::timeout($this->timeout)->post(
+            $response = Http::timeout($this->timeout)->withoutVerifying()->post(
                 "{$this->apiUrl}/{$this->model}:generateContent?key={$this->apiKey}",
                 [
                     'contents' => [
@@ -63,7 +63,7 @@ class GeminiService
     public function generateTextFromPrompt(string $prompt): string
     {
         try {
-            $response = Http::timeout($this->timeout)->post(
+            $response = Http::timeout($this->timeout)->withoutVerifying()->post(
                 "{$this->apiUrl}/{$this->model}:generateContent?key={$this->apiKey}",
                 [
                     'contents' => [

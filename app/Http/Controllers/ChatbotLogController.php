@@ -116,7 +116,7 @@ class ChatbotLogController extends Controller
             $question = $request->input('question');
             
             // Lấy dữ liệu tour để cung cấp context cho chatbot
-            $tours = TourDuLich::select('ten_tour', 'mo_ta', 'gia_nguoi_lon', 'ngay_di', 'ngay_ve')
+            $tours = TourDuLich::select('id', 'ten_tour', 'mo_ta', 'gia_nguoi_lon', 'ngay_di', 'ngay_ve', 'id_danh_muc')
                 ->with('danhMuc:id,ten_danh_muc')
                 ->where('trang_thai', 'hoat_dong')
                 ->limit(20)
