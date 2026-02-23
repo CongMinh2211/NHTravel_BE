@@ -113,8 +113,8 @@
                     <td style="padding:0 40px 30px 40px;">
                         <h3 style="margin:0 0 15px 0; color:#374151; font-size:16px; font-weight:700;">Gợi ý cho chuyến hành trình 🇻🇳</h3>
                         <div style="border-radius:12px; overflow:hidden; border:1px solid #e5e7eb;">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Night_in_Hoi_An_Ancient_Town.jpg/600px-Night_in_Hoi_An_Ancient_Town.jpg" 
-                                 style="width:100%; display:block;" alt="Hội An đẹp lung linh">
+                            <img src="https://images.unsplash.com/photo-1599708153386-bc2db1ea609c?q=80&w=600&auto=format&fit=crop" 
+                                 width="600" style="width:100%; display:block;" alt="Hội An đẹp lung linh">
                             <div style="padding:15px; background-color:#f9fafb; text-align:center;">
                                 <b style="color:#111827; font-size:14px;">Phố cổ Hội An - Di sản văn hóa thế giới</b>
                                 <p style="margin:5px 0 0 0; color:#6b7280; font-size:12px;">Đừng bỏ lỡ những đêm đèn lồng huyền ảo.</p>
