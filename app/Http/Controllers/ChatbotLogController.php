@@ -47,7 +47,7 @@ class ChatbotLogController extends Controller
     {
         try {
             $request->validate([
-                'id_khach_hang' => 'required|uuid',
+                'id_khach_hang' => 'required|integer',
                 'noi_dung' => 'required|string'
             ]);
 
