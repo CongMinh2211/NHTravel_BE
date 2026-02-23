@@ -209,10 +209,10 @@ Route::get('/tour-suggest', [HomeCustomerController::class, 'suggestTour']);
 
 // ===================== CHATBOT ===========================
 // Public endpoints (không cần authentication)
-Route::middleware([\App\Http\Middleware\HandleCors::class])->post('/chatbot/ask', [ChatbotLogController::class, 'askQuestion']);
+Route::post('/chatbot/ask', [ChatbotLogController::class, 'askQuestion']);
 
 // Protected endpoints (cần authentication)
-Route::middleware(['auth:sanctum', \App\Http\Middleware\HandleCors::class])->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/chatbot/history/{userId}', [ChatbotLogController::class, 'getHistory']);
     Route::post('/chatbot/send-message', [ChatbotLogController::class, 'sendMessage']);
     Route::delete('/chatbot/clear-history/{userId}', [ChatbotLogController::class, 'clearHistory']);
@@ -229,7 +229,7 @@ Route::get('/health', function () {
 });
 
 // Admin endpoints
-Route::middleware(['auth:sanctum', \App\Http\Middleware\HandleCors::class])->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/admin/chatbot/logs', [ChatbotLogController::class, 'index']);
     Route::delete('/admin/chatbot/logs/{id}', [ChatbotLogController::class, 'destroy']);
 });
