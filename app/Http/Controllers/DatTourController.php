@@ -205,6 +205,7 @@ class DatTourController extends Controller
             'email_lien_lac'  => 'required|email',
             'so_dien_thoai_lien_lac' => 'required|string',
             'dia_chi_lien_lac' => 'nullable|string',
+            'id_phuong_tien'  => 'nullable|integer',
         ]);
 
         $tour = TourDuLich::find($request->id_tour);
@@ -271,6 +272,7 @@ class DatTourController extends Controller
             'dia_chi_lien_lac' => $request->dia_chi_lien_lac,
 
             'trang_thai'      => $request->phuong_thuc_thanh_toan === 'cash' ? 'da_thanh_toan' : 'cho_xu_ly',
+            'id_phuong_tien'  => $request->id_phuong_tien,
         ]);
 
         // Tạo bản ghi ThanhToan nếu là thanh toán khi đi tour
