@@ -277,7 +277,7 @@ class DatTourController extends Controller
         if ($request->phuong_thuc_thanh_toan === 'cash') {
             \App\Models\ThanhToan::create([
                 'id_dat_tour' => $booking->id,
-                'phuong_thuc' => 'cash',
+                'phuong_thuc' => 'tien_mat',
                 'so_tien' => $tienThucNhan,
                 'trang_thai' => 'thanh_cong',
                 'thoi_gian_thanh_toan' => now(),
