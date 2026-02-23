@@ -20,8 +20,11 @@
                     <td style="padding:35px 40px 20px 40px;">
                         <table cellpadding="0" cellspacing="0">
                             <tr>
-                                <td style="background:rgba(255,255,255,0.2); border-radius:12px; padding:8px 16px;">
-                                    <span style="color:#ffffff; font-size:20px; font-weight:800; letter-spacing:1.5px;">✈️ NHTravel</span>
+                                <td style="background:rgba(255,255,255,1); border-radius:12px; padding:10px;">
+                                    <img src="https://nhtravel.vercel.app/logoweb.png" alt="NHTravel Logo" style="height:40px; display:block;">
+                                </td>
+                                <td style="padding-left:15px; vertical-align:middle;">
+                                    <span style="color:#ffffff; font-size:22px; font-weight:800; letter-spacing:1.5px;">NHTravel</span>
                                 </td>
                             </tr>
                         </table>
