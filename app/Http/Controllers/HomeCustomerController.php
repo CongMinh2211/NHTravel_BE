@@ -28,7 +28,7 @@ class HomeCustomerController
 
     public function getDanhGia()
     {
-        $danhgias = DanhGia::with('nguoiDung:id,ten,avatar')
+        $danhgias = DanhGia::with('nguoiDung:id,ho_ten,avatar')
             ->where('diem', 5)
             ->orderBy('created_at', 'desc')
             ->take(10)
