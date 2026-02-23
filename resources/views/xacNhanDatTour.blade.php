@@ -108,24 +108,18 @@
                     </td>
                 </tr>
 
-                <!-- ===== VIETNAM DISCOVERY SECTION (MORE IMAGES) ===== -->
+                <!-- ===== VIETNAM DISCOVERY SECTION (STABLE IMAGES) ===== -->
                 <tr>
                     <td style="padding:0 40px 30px 40px;">
-                        <h3 style="margin:0 0 15px 0; color:#374151; font-size:16px; font-weight:700;">Khám phá các điểm đến hot nhất 🇻🇳</h3>
-                        <table width="100%" cellpadding="0" cellspacing="10">
-                            <tr>
-                                <td width="50%" style="padding:0;">
-                                    <img src="https://images.unsplash.com/photo-1528127269322-539801943592?ixlib=rb-4.0.3&auto=format&fit=crop&w=280&h=180&q=80" 
-                                         style="width:100%; border-radius:8px; display:block;" alt="Ha Long Bay">
-                                    <p style="margin:5px 0 0 0; font-size:12px; font-weight:600; text-align:center;">Vịnh Hạ Long</p>
-                                </td>
-                                <td width="50%" style="padding:0;">
-                                    <img src="https://images.unsplash.com/photo-1555930644-6933b424b607?ixlib=rb-4.0.3&auto=format&fit=crop&w=280&h=180&q=80" 
-                                         style="width:100%; border-radius:8px; display:block;" alt="Hoi An">
-                                    <p style="margin:5px 0 0 0; font-size:12px; font-weight:600; text-align:center;">Phố cổ Hội An</p>
-                                </td>
-                            </tr>
-                        </table>
+                        <h3 style="margin:0 0 15px 0; color:#374151; font-size:16px; font-weight:700;">Gợi ý cho chuyến hành trình 🇻🇳</h3>
+                        <div style="border-radius:12px; overflow:hidden; border:1px solid #e5e7eb;">
+                            <img src="https://images.unsplash.com/photo-1555930644-6933b424b607?auto=format&fit=crop&w=600&q=80" 
+                                 style="width:100%; display:block;" alt="Hội An đẹp lung linh">
+                            <div style="padding:15px; background-color:#f9fafb; text-align:center;">
+                                <b style="color:#111827; font-size:14px;">Phố cổ Hội An - Di sản văn hóa thế giới</b>
+                                <p style="margin:5px 0 0 0; color:#6b7280; font-size:12px;">Đừng bỏ lỡ những đêm đèn lồng huyền ảo.</p>
+                            </div>
+                        </div>
                     </td>
                 </tr>
 
