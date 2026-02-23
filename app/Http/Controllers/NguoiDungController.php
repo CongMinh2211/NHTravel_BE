@@ -434,7 +434,9 @@ class NguoiDungController
             'cccd.unique'     => 'Số CCCD này đã có người sử dụng.',
         ]);
 
-        $user->update([
+        // Lấy lại model Eloquent chính xác để tránh lỗi linter và đảm bảo method update tồn tại
+        $me = NguoiDung::find($user->id);
+        $me->update([
             'ho_ten'        => $request->ho_ten,
             'email'         => $request->email,
             'so_dien_thoai' => $request->so_dien_thoai,
@@ -476,7 +478,9 @@ class NguoiDungController
             ], 400);
         }
 
-        $user->update([
+        // Lấy lại model Eloquent chính xác
+        $me = NguoiDung::find($user->id);
+        $me->update([
             'password' => $request->password_moi
         ]);
 
