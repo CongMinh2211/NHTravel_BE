@@ -176,6 +176,10 @@ Route::prefix('customer')->group(function () {
     Route::apiResource('danh-muc-bai-viet', DanhMucBaiVietController::class);
  
 
+    // Hồ sơ cá nhân
+    Route::middleware('auth:sanctum')->post('/profile/update', [NguoiDungController::class, 'capNhatThongTin']);
+    Route::middleware('auth:sanctum')->post('/profile/change-password', [NguoiDungController::class, 'doiMatKhau']);
+
 });
 
 // ===================== VNPay ===============================

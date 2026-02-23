@@ -413,4 +413,76 @@ class NguoiDungController
             'data' => $data
         ]);
     }
+
+    public function capNhatThongTin(Request $request)
+    {
+        $user = Auth::guard('sanctum')->user();
+
+        if (!$user) {
+            return response()->json(['status' => false, 'message' => 'Bạn chưa đăng nhập!'], 401);
+        }
+
+        $request->validate([
+            'ho_ten'        => 'required|string|max:255',
+            'email'         => 'required|email|unique:nguoi_dungs,email,' . $user->id,
+            'so_dien_thoai' => 'nullable|string',
+            'ngay_sinh'     => 'nullable|date',
+            'cccd'          => 'nullable|string|unique:nguoi_dungs,cccd,' . $user->id,
+        ], [
+            'ho_ten.required' => 'Họ tên không được để trống.',
+            'email.unique'    => 'Email này đã có người sử dụng.',
+            'cccd.unique'     => 'Số CCCD này đã có người sử dụng.',
+        ]);
+
+        $user->update([
+            'ho_ten'        => $request->ho_ten,
+            'email'         => $request->email,
+            'so_dien_thoai' => $request->so_dien_thoai,
+            'ngay_sinh'     => $request->ngay_sinh,
+            'cccd'          => $request->cccd,
+            'avatar'        => $request->avatar,
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Cập nhật thông tin thành công!',
+            'data' => $user
+        ]);
+    }
+
+    public function doiMatKhau(Request $request)
+    {
+        $user = Auth::guard('sanctum')->user();
+
+        if (!$user) {
+            return response()->json(['status' => false, 'message' => 'Bạn chưa đăng nhập!'], 401);
+        }
+
+        $request->validate([
+            'password_cu' => 'required',
+            'password_moi' => 'required|min:6|different:password_cu',
+            're_password_moi' => 'required|same:password_moi',
+        ], [
+            'password_moi.min' => 'Mật khẩu mới ít nhất 6 ký tự.',
+            'password_moi.different' => 'Mật khẩu mới phải khác mật khẩu cũ.',
+            're_password_moi.same' => 'Mật khẩu xác nhận không khớp.',
+        ]);
+
+        // Kiểm tra mật khẩu cũ (Vì đang dùng lưu thẳng không hash nên so sánh trực tiếp)
+        if ($user->password !== $request->password_cu) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Mật khẩu cũ không chính xác.'
+            ], 400);
+        }
+
+        $user->update([
+            'password' => $request->password_moi
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Đổi mật khẩu thành công!'
+        ]);
+    }
 }
