@@ -1,4 +1,4 @@
-﻿# Trigger Build v3
+﻿# Trigger Build v4
 FROM php:8.4-apache
 
 # Install system dependencies
@@ -24,10 +24,9 @@ WORKDIR /var/www/html
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 # Copy the application code
-# Note: When pushed to NHTravel_BE repo, the contents of the 'be' folder will be at root
 COPY . /var/www/html/
 
-# Copy .env file if exists (Railway usually provides env vars, but just in case)
+# Copy .env.example to .env
 COPY .env.example .env
 
 # Install Composer
@@ -42,7 +41,7 @@ RUN mkdir -p storage/framework/{sessions,views,cache/data} \
     && chmod -R 775 storage bootstrap/cache \
     && chown -R www-data:www-data /var/www/html
 
-# Configure Apache
+# Configure Apache DocumentRoot
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf \
     && echo "<Directory /var/www/html/public>" > /etc/apache2/sites-available/000-default.conf \
     && echo "    Options -Indexes +FollowSymLinks" >> /etc/apache2/sites-available/000-default.conf \
@@ -50,13 +49,12 @@ RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available
     && echo "    Require all granted" >> /etc/apache2/sites-available/000-default.conf \
     && echo "</Directory>" >> /etc/apache2/sites-available/000-default.conf
 
-# Set environment variables for Railway
+# Set environment variables
 ENV PORT=8080
 EXPOSE 8080
 
-# Use the PORT environment variable in Apache config
-RUN sed -i 's/80/${PORT}/g' /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
-
-# Start Apache
+# Make entrypoint script executable
 RUN chmod +x /var/www/html/entrypoint.sh
+
+# Start using entrypoint
 ENTRYPOINT ["/var/www/html/entrypoint.sh"]
