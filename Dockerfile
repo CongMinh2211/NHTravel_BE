@@ -57,4 +57,5 @@ EXPOSE 8080
 RUN sed -i 's/80/${PORT}/g' /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
 
 # Start Apache
-CMD ["apache2-foreground"]
+RUN chmod +x /var/www/html/entrypoint.sh
+ENTRYPOINT ["/var/www/html/entrypoint.sh"]
