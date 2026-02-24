@@ -15,8 +15,10 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pdo_mysql pdo_sqlite bcmath gd mbstring \
     && rm -rf /var/lib/apt/lists/*
 
-# Fix Apache MPM configuration - explicitly disable conflicting modules
-RUN a2dismod mpm_event mpm_worker 2>/dev/null || true \
+# Fix Apache MPM configuration - disable all MPMs first, then enable only prefork
+RUN a2dismod mpm_event 2>/dev/null || true \
+    && a2dismod mpm_worker 2>/dev/null || true \
+    && a2dismod mpm_prefork 2>/dev/null || true \
     && a2enmod mpm_prefork rewrite
 
 # Set working directory
