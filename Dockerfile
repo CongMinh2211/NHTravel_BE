@@ -1,5 +1,5 @@
-﻿# Trigger Build v2
-FROM php:8.2-apache
+﻿# Trigger Build v3
+FROM php:8.4-apache
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
