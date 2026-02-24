@@ -53,8 +53,11 @@ RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available
 ENV PORT=8080
 EXPOSE 8080
 
-# Make entrypoint script executable
-RUN chmod +x /var/www/html/entrypoint.sh
+# Convert line endings and make entrypoint executable
+RUN apt-get update && apt-get install -y dos2unix \
+    && dos2unix /var/www/html/entrypoint.sh \
+    && chmod +x /var/www/html/entrypoint.sh \
+    && rm -rf /var/lib/apt/lists/*
 
 # Start using entrypoint
-ENTRYPOINT ["/var/www/html/entrypoint.sh"]
+CMD ["/bin/bash", "/var/www/html/entrypoint.sh"]
