@@ -3,6 +3,13 @@ set -e
 
 echo "--- Starting Entrypoint Script ---"
 
+# Runtime Fix for Apache MPM configuration
+# Ensure ONLY mpm_prefork is enabled, removing any conflicts
+echo "Fixing Apache MPM configuration (Runtime)..."
+rm -f /etc/apache2/mods-enabled/mpm_*
+a2dismod mpm_event mpm_worker 2>/dev/null || true
+a2enmod mpm_prefork 2>/dev/null || true
+
 # Set up port dynamically for Railway
 echo "Configuring Apache port to ${PORT:-8080}..."
 sed -i "s/Listen 80/Listen ${PORT:-8080}/g" /etc/apache2/ports.conf
