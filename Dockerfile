@@ -57,4 +57,4 @@ EXPOSE 8080
 RUN chmod +x /var/www/html/entrypoint.sh
 
 # Start using entrypoint
-CMD ["/var/www/html/entrypoint.sh"]
+ENTRYPOINT ["/var/www/html/entrypoint.sh"]
