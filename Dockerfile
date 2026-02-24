@@ -1,4 +1,4 @@
-﻿# Trigger Build v6
+﻿# Trigger Build v7
 FROM php:8.4-apache
 
 # Install system dependencies
@@ -16,7 +16,6 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Definitive Fix for Apache MPM configuration
-# Aggressively remove all MPM modules and enable only prefork
 RUN rm -f /etc/apache2/mods-enabled/mpm_* \
     && a2dismod mpm_event mpm_worker 2>/dev/null || true \
     && a2enmod mpm_prefork rewrite
@@ -45,14 +44,15 @@ RUN mkdir -p storage/framework/{sessions,views,cache/data} \
     && chmod -R 775 storage bootstrap/cache \
     && chown -R www-data:www-data /var/www/html
 
-# Configure Apache DocumentRoot
-RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf \
-    && sed -i 's!<VirtualHost \*:80>!<VirtualHost \*:8080>!g' /etc/apache2/sites-available/000-default.conf \
-    && echo "<Directory /var/www/html/public>" >> /etc/apache2/sites-available/000-default.conf \
-    && echo "    Options -Indexes +FollowSymLinks" >> /etc/apache2/sites-available/000-default.conf \
-    && echo "    AllowOverride All" >> /etc/apache2/sites-available/000-default.conf \
-    && echo "    Require all granted" >> /etc/apache2/sites-available/000-default.conf \
-    && echo "</Directory>" >> /etc/apache2/sites-available/000-default.conf
+# Robust Apache Configuration
+RUN echo '<VirtualHost *:80>\n\
+    DocumentRoot /var/www/html/public\n\
+    <Directory /var/www/html/public>\n\
+    Options -Indexes +FollowSymLinks\n\
+    AllowOverride All\n\
+    Require all granted\n\
+    </Directory>\n\
+    </VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
 # Set environment variables
 ENV PORT=8080
