@@ -47,7 +47,8 @@ RUN mkdir -p storage/framework/{sessions,views,cache/data} \
 
 # Configure Apache DocumentRoot
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf \
-    && echo "<Directory /var/www/html/public>" > /etc/apache2/sites-available/000-default.conf \
+    && sed -i 's!<VirtualHost \*:80>!<VirtualHost \*:8080>!g' /etc/apache2/sites-available/000-default.conf \
+    && echo "<Directory /var/www/html/public>" >> /etc/apache2/sites-available/000-default.conf \
     && echo "    Options -Indexes +FollowSymLinks" >> /etc/apache2/sites-available/000-default.conf \
     && echo "    AllowOverride All" >> /etc/apache2/sites-available/000-default.conf \
     && echo "    Require all granted" >> /etc/apache2/sites-available/000-default.conf \

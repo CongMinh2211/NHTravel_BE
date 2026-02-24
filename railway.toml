@@ -6,3 +6,5 @@ dockerfilePath = "Dockerfile"
 startCommand = "/var/www/html/entrypoint.sh"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
+healthcheckPath = "/"
+healthcheckTimeout = 300
