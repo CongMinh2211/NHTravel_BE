@@ -44,7 +44,7 @@ php artisan view:cache
 
 # Final permissions check
 echo "Applying file permissions..."
-chmod -R 775 storage bootstrap/cache database
+chmod -R 775 storage bootstrap/cache database public
 chown -R www-data:www-data /var/www/html
 
 echo "Starting Apache..."
