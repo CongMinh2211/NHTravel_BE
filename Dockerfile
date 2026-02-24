@@ -1,4 +1,4 @@
-﻿# Trigger Build v4
+﻿# Trigger Build v5
 FROM php:8.4-apache
 
 # Install system dependencies
@@ -11,13 +11,13 @@ RUN apt-get update && apt-get install -y \
     libmariadb-dev \
     libonig-dev \
     libxml2-dev \
+    dos2unix \
     && docker-php-ext-install pdo_mysql pdo_sqlite bcmath gd mbstring \
     && rm -rf /var/lib/apt/lists/*
 
-# Fix Apache MPM configuration - remove all MPM modules and enable only prefork
-RUN rm -f /etc/apache2/mods-enabled/mpm_* \
-    && a2enmod mpm_prefork \
-    && a2enmod rewrite
+# Fix Apache MPM configuration - explicitly disable conflicting modules
+RUN a2dismod mpm_event mpm_worker 2>/dev/null || true \
+    && a2enmod mpm_prefork rewrite
 
 # Set working directory
 WORKDIR /var/www/html
@@ -28,8 +28,8 @@ RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 # Copy the application code
 COPY . /var/www/html/
 
-# Copy .env.example to .env
-COPY .env.example .env
+# Ensure .env exists from example
+RUN cp .env.example .env
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -56,10 +56,8 @@ ENV PORT=8080
 EXPOSE 8080
 
 # Convert line endings and make entrypoint executable
-RUN apt-get update && apt-get install -y dos2unix \
-    && dos2unix /var/www/html/entrypoint.sh \
-    && chmod +x /var/www/html/entrypoint.sh \
-    && rm -rf /var/lib/apt/lists/*
+RUN dos2unix /var/www/html/entrypoint.sh \
+    && chmod +x /var/www/html/entrypoint.sh
 
 # Start using entrypoint
-CMD ["/bin/bash", "/var/www/html/entrypoint.sh"]
+ENTRYPOINT ["/var/www/html/entrypoint.sh"]
