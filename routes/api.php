@@ -13,9 +13,6 @@ use App\Http\Controllers\VaiTroController;
 use App\Http\Controllers\Thong_keController;
 use App\Http\Controllers\ThanhToanController;
 use App\Http\Controllers\SePayWebhookController;
-use App\Http\Controllers\TestController;
-
-Route::get('test/seed', [TestController::class, 'seedDb']);
 
 use App\Http\Controllers\DatTourController;
 use App\Http\Controllers\HomeCustomerController;
