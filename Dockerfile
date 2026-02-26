@@ -1,4 +1,4 @@
-﻿# Trigger Build v8.1 (Triggering Build)
+﻿# Trigger Build v9
 FROM php:8.4-apache
 
 # Install system dependencies
@@ -44,15 +44,15 @@ RUN mkdir -p storage/framework/{sessions,views,cache/data} \
     && chmod -R 775 storage bootstrap/cache \
     && chown -R www-data:www-data /var/www/html
 
-# Robust Apache Configuration
-RUN echo '<VirtualHost *:80>\n\
+# Robust Apache Configuration (v9)
+RUN printf "<VirtualHost *:80>\n\
     DocumentRoot /var/www/html/public\n\
     <Directory /var/www/html/public>\n\
     Options -Indexes +FollowSymLinks\n\
     AllowOverride All\n\
     Require all granted\n\
     </Directory>\n\
-    </VirtualHost>' > /etc/apache2/sites-available/000-default.conf
+    </VirtualHost>\n" > /etc/apache2/sites-available/000-default.conf
 
 # Set environment variables
 ENV PORT=8080

@@ -6,7 +6,7 @@ use App\Models\NguoiDung;
 use App\Mail\MasterMail;
 use App\Models\ChucVu;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -19,12 +19,27 @@ class NguoiDungController
     {
 
 
-        // Tìm user theo email và password
-        $user = NguoiDung::where('email', $request->email)
-            ->where('password', $request->password)
-            ->first();
+        // Tìm user theo email
+        $user = NguoiDung::where('email', $request->email)->first();
 
         if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Thông tin đăng nhập không chính xác.'
+            ], 401);
+        }
+
+        // Kiểm tra mật khẩu - hỗ trợ cả plain text và hashed password
+        $passwordValid = false;
+        if ($user->password && strlen($user->password) > 60) {
+            // Nếu password trong DB có vẻ là hash (BCrypt > 60 ký tự), dùng Hash::check
+            $passwordValid = Hash::check($request->password, $user->password);
+        } else {
+            // So sánh trực tiếp cho plain text
+            $passwordValid = ($user->password === $request->password);
+        }
+
+        if (!$passwordValid) {
             return response()->json([
                 'status' => false,
                 'message' => 'Thông tin đăng nhập không chính xác.'
