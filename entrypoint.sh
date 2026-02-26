@@ -12,13 +12,20 @@ a2enmod mpm_prefork 2>/dev/null || true
 
 # Set up port dynamically for Railway
 echo "Configuring Apache port to ${PORT:-8080}..."
-sed -i "s/Listen 80/Listen ${PORT:-8080}/g" /etc/apache2/ports.conf
+# Use a more specific sed to avoid accidental matches
+sed -i "s/^Listen 80/Listen ${PORT:-8080}/g" /etc/apache2/ports.conf
 sed -i "s/<VirtualHost \*:80>/<VirtualHost \*:${PORT:-8080}>/g" /etc/apache2/sites-available/000-default.conf
 
 # Ensure .env exists
 if [ ! -f .env ]; then
     echo "Creating .env from .env.example..."
     cp .env.example .env
+fi
+
+# Ensure APP_KEY placeholder exists in .env
+if ! grep -q "APP_KEY=" .env; then
+    echo "Adding APP_KEY placeholder to .env..."
+    echo "APP_KEY=" >> .env
 fi
 
 # Ensure APP_KEY exists
