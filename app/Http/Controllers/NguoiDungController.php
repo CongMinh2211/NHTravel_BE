@@ -78,7 +78,9 @@ class NguoiDungController
                 'id' => $user->id,
                 'ho_ten' => $user->ho_ten,
                 'id_chuc_vu' => $user->id_chuc_vu,
-                'email' => $user->email
+                'email' => $user->email,
+                'so_dien_thoai' => $user->so_dien_thoai,
+                'dia_chi' => $user->dia_chi
             ]
         ]);
     }
@@ -102,7 +104,9 @@ class NguoiDungController
                 'id' => $user->id,
                 'ho_ten' => $user->ho_ten,
                 'id_chuc_vu' => $user->id_chuc_vu,
-                'email' => $user->email
+                'email' => $user->email,
+                'so_dien_thoai' => $user->so_dien_thoai,
+                'dia_chi' => $user->dia_chi
             ]
         ]);
     }

@@ -19,6 +19,8 @@ class TourDuLich extends Model
         'gio_di',
         'gio_ve',
         'dia_diem',
+        'latitude',
+        'longitude',
         'tao_boi',
         'so_cho',
         'so_cho_con',
