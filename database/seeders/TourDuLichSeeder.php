@@ -14,9 +14,9 @@ class TourDuLichSeeder extends Seeder
     public function run()
     {
         // 1. Xóa dữ liệu cũ
-        if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS = 0;'); }
+        if (DB::getDriverName() === 'sqlite') { DB::statement('PRAGMA foreign_keys = OFF;'); } else { DB::statement('SET FOREIGN_KEY_CHECKS = 0;'); }
         DB::table('tour_du_liches')->truncate();
-        if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS = 1;'); }
+        if (DB::getDriverName() === 'sqlite') { DB::statement('PRAGMA foreign_keys = ON;'); } else { DB::statement('SET FOREIGN_KEY_CHECKS = 1;'); }
 
         $now = now();
 
@@ -421,4 +421,5 @@ class TourDuLichSeeder extends Seeder
         TourDuLich::insert($data);
     }
 }
+
 

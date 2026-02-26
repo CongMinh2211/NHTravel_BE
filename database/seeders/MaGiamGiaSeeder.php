@@ -74,3 +74,4 @@ class MaGiamGiaSeeder extends Seeder
         ]);
     }
 }
+

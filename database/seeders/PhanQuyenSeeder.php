@@ -13,9 +13,9 @@ class PhanQuyenSeeder extends Seeder
     public function run(): void
     {
         // 1. Làm sạch bảng trước khi seed
-        if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS = 0;'); }
+        if (DB::getDriverName() === 'sqlite') { DB::statement('PRAGMA foreign_keys = OFF;'); } else { DB::statement('SET FOREIGN_KEY_CHECKS = 0;'); }
         DB::table('phan_quyens')->truncate();
-        if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS = 1;'); }
+        if (DB::getDriverName() === 'sqlite') { DB::statement('PRAGMA foreign_keys = ON;'); } else { DB::statement('SET FOREIGN_KEY_CHECKS = 1;'); }
 
         $now = now();
 
@@ -50,3 +50,4 @@ class PhanQuyenSeeder extends Seeder
         DB::table('phan_quyens')->insert($data);
     }
 }
+

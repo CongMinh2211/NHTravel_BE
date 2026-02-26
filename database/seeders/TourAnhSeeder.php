@@ -11,9 +11,9 @@ class TourAnhSeeder extends Seeder
     public function run(): void
     {
         // 1. Xóa dữ liệu cũ để tránh trùng lặp khi seed lại
-        if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS = 0;'); }
+        if (DB::getDriverName() === 'sqlite') { DB::statement('PRAGMA foreign_keys = OFF;'); } else { DB::statement('SET FOREIGN_KEY_CHECKS = 0;'); }
         DB::table('tour_anhs')->truncate();
-        if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS = 1;'); }
+        if (DB::getDriverName() === 'sqlite') { DB::statement('PRAGMA foreign_keys = ON;'); } else { DB::statement('SET FOREIGN_KEY_CHECKS = 1;'); }
 
         $data = [];
 
@@ -124,3 +124,4 @@ class TourAnhSeeder extends Seeder
         TourAnh::insert($data);
     }
 }
+

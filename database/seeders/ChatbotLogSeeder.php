@@ -17,3 +17,4 @@ class ChatbotLogSeeder extends Seeder
         ]);
     }
 }
+

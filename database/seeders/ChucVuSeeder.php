@@ -13,9 +13,9 @@ class ChucVuSeeder extends Seeder
     public function run(): void
     {
         // 1. Làm sạch bảng cũ
-        if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS = 0;'); }
+        if (DB::getDriverName() === 'sqlite') { DB::statement('PRAGMA foreign_keys = OFF;'); } else { DB::statement('SET FOREIGN_KEY_CHECKS = 0;'); }
         DB::table('chuc_vus')->truncate();
-        if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS = 1;'); }
+        if (DB::getDriverName() === 'sqlite') { DB::statement('PRAGMA foreign_keys = ON;'); } else { DB::statement('SET FOREIGN_KEY_CHECKS = 1;'); }
 
         $data = [
             [
@@ -69,3 +69,4 @@ class ChucVuSeeder extends Seeder
         DB::table('chuc_vus')->insert($data);
     }
 }
+

@@ -10,9 +10,9 @@ class PhuongTienSeeder extends Seeder
 {
     public function run(): void
     {
-        if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS = 0;'); }
+        if (DB::getDriverName() === 'sqlite') { DB::statement('PRAGMA foreign_keys = OFF;'); } else { DB::statement('SET FOREIGN_KEY_CHECKS = 0;'); }
         DB::table('phuong_tiens')->truncate();
-        if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS = 1;'); }
+        if (DB::getDriverName() === 'sqlite') { DB::statement('PRAGMA foreign_keys = ON;'); } else { DB::statement('SET FOREIGN_KEY_CHECKS = 1;'); }
 
         PhuongTien::insert([
             [
@@ -81,4 +81,5 @@ class PhuongTienSeeder extends Seeder
         ]);
     }
 }
+
 

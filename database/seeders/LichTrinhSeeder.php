@@ -14,9 +14,9 @@ class LichTrinhSeeder extends Seeder
     public function run()
     {
         // Xóa dữ liệu cũ (tùy chọn, nếu cần)
-        // if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS = 0;'); }
+        // if (DB::getDriverName() === 'sqlite') { DB::statement('PRAGMA foreign_keys = OFF;'); } else { DB::statement('SET FOREIGN_KEY_CHECKS = 0;'); }
         // DB::table('lich_trinhs')->truncate();
-        // if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS = 1;'); }
+        // if (DB::getDriverName() === 'sqlite') { DB::statement('PRAGMA foreign_keys = ON;'); } else { DB::statement('SET FOREIGN_KEY_CHECKS = 1;'); }
         
         $now = Carbon::now();
 
@@ -197,3 +197,4 @@ class LichTrinhSeeder extends Seeder
         LichTrinh::insert($data);
     }
 }
+

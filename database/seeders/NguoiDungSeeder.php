@@ -70,3 +70,4 @@ class NguoiDungSeeder extends Seeder
         ]);
     }
 }
+

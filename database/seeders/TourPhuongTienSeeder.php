@@ -10,9 +10,9 @@ class TourPhuongTienSeeder extends Seeder
 {
     public function run()
     {
-        if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS = 0;'); }
+        if (DB::getDriverName() === 'sqlite') { DB::statement('PRAGMA foreign_keys = OFF;'); } else { DB::statement('SET FOREIGN_KEY_CHECKS = 0;'); }
         DB::table('tour_phuong_tiens')->truncate();
-        if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS = 1;'); }
+        if (DB::getDriverName() === 'sqlite') { DB::statement('PRAGMA foreign_keys = ON;'); } else { DB::statement('SET FOREIGN_KEY_CHECKS = 1;'); }
 
         // Giả sử:
         // Tour 1 (Đà Nẵng): Dùng 1 xe 7 chỗ (ID 1) và 1 xe Giường nằm (ID 2)
@@ -115,4 +115,5 @@ class TourPhuongTienSeeder extends Seeder
         ]);
     }
 }
+
 

@@ -45,3 +45,4 @@ class ThanhToanSeeder extends Seeder
         ThanhToan::insert($data);
     }
 }
+

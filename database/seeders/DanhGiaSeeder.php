@@ -14,9 +14,9 @@ class DanhGiaSeeder extends Seeder
     public function run()
     {
         // 1. Xóa sạch dữ liệu cũ để tránh trùng lặp id hoặc lỗi khóa ngoại
-        if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS = 0;'); }
+        if (DB::getDriverName() === 'sqlite') { DB::statement('PRAGMA foreign_keys = OFF;'); } else { DB::statement('SET FOREIGN_KEY_CHECKS = 0;'); }
         DB::table('danh_gias')->truncate();
-        if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS = 1;'); }
+        if (DB::getDriverName() === 'sqlite') { DB::statement('PRAGMA foreign_keys = ON;'); } else { DB::statement('SET FOREIGN_KEY_CHECKS = 1;'); }
 
         $now = now();
 
@@ -106,3 +106,4 @@ class DanhGiaSeeder extends Seeder
         ]);
     }
 }
+

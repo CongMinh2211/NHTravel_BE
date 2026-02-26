@@ -11,9 +11,9 @@ class DanhMucBaiVietSeeder extends Seeder
     public function run(): void
     {
         // 1. Xóa dữ liệu cũ
-        if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS = 0;'); }
+        if (DB::getDriverName() === 'sqlite') { DB::statement('PRAGMA foreign_keys = OFF;'); } else { DB::statement('SET FOREIGN_KEY_CHECKS = 0;'); }
         DB::table('danh_muc_bai_viets')->truncate();
-        if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS = 1;'); }
+        if (DB::getDriverName() === 'sqlite') { DB::statement('PRAGMA foreign_keys = ON;'); } else { DB::statement('SET FOREIGN_KEY_CHECKS = 1;'); }
 
         // 2. Bộ dữ liệu mẫu phong phú (15 mục)
         $data = [
@@ -97,3 +97,4 @@ class DanhMucBaiVietSeeder extends Seeder
         DanhMucBaiViet::insert($data);
     }
 }
+

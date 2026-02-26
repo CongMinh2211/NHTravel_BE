@@ -82,3 +82,4 @@ class DatTourSeeder extends Seeder
         DatTour::insert($donHangs);
     }
 }
+

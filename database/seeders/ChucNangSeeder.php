@@ -13,9 +13,9 @@ class ChucNangSeeder extends Seeder
     public function run(): void
     {
         // 1. Tắt kiểm tra khóa ngoại để xóa sạch dữ liệu cũ (nếu có)
-        if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS = 0;'); }
+        if (DB::getDriverName() === 'sqlite') { DB::statement('PRAGMA foreign_keys = OFF;'); } else { DB::statement('SET FOREIGN_KEY_CHECKS = 0;'); }
         DB::table('chuc_nangs')->truncate();
-        if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS = 1;'); }
+        if (DB::getDriverName() === 'sqlite') { DB::statement('PRAGMA foreign_keys = ON;'); } else { DB::statement('SET FOREIGN_KEY_CHECKS = 1;'); }
 
         // 2. Danh sách chức năng (Gán ID cứng để dễ phân quyền sau này)
         $data = [
@@ -79,3 +79,4 @@ class ChucNangSeeder extends Seeder
         DB::table('chuc_nangs')->insert($data);
     }
 }
+
