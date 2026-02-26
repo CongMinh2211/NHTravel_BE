@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\BaiVietController;
-use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ChatbotLogController;
 use App\Http\Controllers\ChiTietTourController;
 use App\Http\Controllers\ChucNangController;
@@ -185,12 +184,6 @@ Route::prefix('customer')->group(function () {
     Route::middleware('auth:sanctum')->post('/profile/change-password', [NguoiDungController::class, 'doiMatKhau']);
 
 });
-
-// ===================== VNPay ===============================
-Route::post('/payment/vnpay/create', [CheckoutController::class, 'vnpay_payment']);
-Route::get('/payment/vnpay/return', [CheckoutController::class, 'vnpay_return']);
-// Route::get('/payment/vnpay/ipn', [CheckoutController::class, 'vnpay_ipn']);
-Route::get('/vnpay/ipn', [CheckoutController::class, 'vnpay_ipn']);
 
 // ===================== SePay ===============================
 use App\Http\Controllers\SepayController;
