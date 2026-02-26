@@ -35,14 +35,23 @@ if ! grep -q "APP_KEY=base64:" .env; then
 fi
 
 # Set up database (SQLite fallback)
+FORCE_MIGRATE=false
+
 if [ ! -f database/database.sqlite ]; then
-    echo "Creating database/database.sqlite..."
     mkdir -p database
     touch database/database.sqlite
+    echo "Tạo mới file database.sqlite"
+    FORCE_MIGRATE=true
 fi
 
 echo "Running migrations..."
 php artisan migrate --force || echo "WARNING: Migration failed, continuing to start server..."
+
+# Seed database if it's a new database and we forced migrations
+if [ "$FORCE_MIGRATE" = true ]; then
+    echo "Chạy seed dữ liệu cho database mới..."
+    php artisan db:seed --force
+fi
 
 echo "Caching configuration and routes..."
 php artisan config:cache

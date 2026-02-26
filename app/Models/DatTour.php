@@ -25,7 +25,8 @@ class DatTour extends Model
         'so_dien_thoai_lien_lac',
         'dia_chi_lien_lac',
         'trang_thai',
-        'id_phuong_tien'
+        'id_phuong_tien',
+        'ghi_chu'
     ];
 
     public function khachHang()
