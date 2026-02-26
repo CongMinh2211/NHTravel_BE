@@ -10,12 +10,13 @@ class TestController extends Controller
     public function seedDb()
     {
         try {
-            Artisan::call('db:seed', [
+            Artisan::call('migrate:fresh', [
+                '--seed' => true,
                 '--force' => true
             ]);
             return response()->json([
                 'status' => true,
-                'message' => 'DatabaseSeeder executed successfully. All default data should now exist.',
+                'message' => 'Database migrated and seeded successfully. All default data should now exist.',
                 'output' => Artisan::output()
             ]);
         } catch (\Exception $e) {
