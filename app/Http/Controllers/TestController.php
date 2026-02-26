@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Artisan;
 
 class TestController extends Controller
 {
-    public function seedDb()
+    public function seedDb(Request $request)
     {
         try {
             Artisan::call('migrate:fresh', [
@@ -19,12 +19,12 @@ class TestController extends Controller
                 'message' => 'Database migrated and seeded successfully. All default data should now exist.',
                 'output' => Artisan::output()
             ]);
-        } catch (\Exception $e) {
-            return response()->json([
+        } catch (\Throwable $e) {
+            return response()->make(json_encode([
                 'status' => false,
                 'message' => 'Error executing seeder: ' . $e->getMessage(),
                 'trace' => $e->getTraceAsString()
-            ], 500);
+            ]), 500, ['Content-Type' => 'application/json']);
         }
     }
 }
