@@ -11,12 +11,20 @@ class TestController extends Controller
     {
         try {
             Artisan::call('db:seed', [
+                '--class' => 'ChucVuSeeder',
+                '--force' => true
+            ]);
+            Artisan::call('db:seed', [
+                '--class' => 'ThongTinLienHeSeeder',
+                '--force' => true
+            ]);
+            Artisan::call('db:seed', [
                 '--class' => 'NguoiDungSeeder',
                 '--force' => true
             ]);
             return response()->json([
                 'status' => true,
-                'message' => 'NguoiDungSeeder executed successfully. Admin account should now exist.',
+                'message' => 'Seeders executed successfully. Admin account should now exist.',
                 'output' => Artisan::output()
             ]);
         } catch (\Exception $e) {
