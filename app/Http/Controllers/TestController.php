@@ -22,7 +22,8 @@ class TestController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Error executing seeder: ' . $e->getMessage()
+                'message' => 'Error executing seeder: ' . $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ], 500);
         }
     }
